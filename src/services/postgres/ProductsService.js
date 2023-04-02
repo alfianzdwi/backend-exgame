@@ -10,12 +10,23 @@ class ProductsService {
     this._pool = new Pool();
   }
 
-  async addProduct({ title, description, price, images, type, game, owner }) {
+  async addProduct(title, description, price, type, game, owner, imageUrl) {
+    const createdAt = new Date().toISOString().substring(0, 10);
     const id = `pdc-${nanoid(16)}`;
-
+    console.log(createdAt);
     const query = {
-      text: "INSERT INTO products VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id_product",
-      values: [id, title, description, price, images, type, game, owner],
+      text: "INSERT INTO products VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id_product",
+      values: [
+        id,
+        title,
+        description,
+        price,
+        imageUrl,
+        type,
+        game,
+        owner,
+        createdAt,
+      ],
     };
 
     const result = await this._pool.query(query);
@@ -61,7 +72,7 @@ class ProductsService {
 
   async getProductById(id) {
     const query = {
-      text: `SELECT products.*, users.username, games.title_game
+      text: `SELECT products.*, users.username, users.contact, games.title_game
             FROM products
             LEFT JOIN users ON products.owner = users.id
             LEFT JOIN games ON products.game = games.id_game
@@ -98,15 +109,15 @@ class ProductsService {
     return result.rows.map(mapDBToModel)[0];
   }
 
-  async editMyProductById(
-    id,
-    { title, description, price, images, type, game }
-  ) {
+  async editMyProductById(id, title, description, price, type, game, imageUrl) {
     const updateAt = new Date().toISOString();
 
+    console.log(id);
+    console.log(imageUrl);
+    console.log(game);
     const query = {
       text: "UPDATE products SET title_product = $1,description = $2,price = $3, images = $4, type_ads = $5, game = $6 WHERE id_product = $7 RETURNING id_product",
-      values: [title, description, price, images, type, game, id],
+      values: [title, description, price, imageUrl, type, game, id],
     };
 
     const result = await this._pool.query(query);

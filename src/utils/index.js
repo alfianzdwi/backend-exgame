@@ -8,6 +8,8 @@ const mapDBToModel = ({
   images,
   type_ads,
   username,
+  contact,
+  created_at,
 }) => ({
   title: title_product,
   game: title_game,
@@ -17,6 +19,8 @@ const mapDBToModel = ({
   images,
   type: type_ads,
   username,
+  contact,
+  createdAt: created_at,
 });
 
 const mapGameDBToModel = ({ id_game, title_game }) => ({

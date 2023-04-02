@@ -4,6 +4,11 @@ const routes = (handler) => [
     path: "/products",
     handler: handler.postProductHandler, //Menggunakan fungsi yang merupakan member dari objek handler (parameter).
     options: {
+      payload: {
+        allow: "multipart/form-data",
+        multipart: true,
+        output: "stream", // Untuk mengubah output payload yg berupa Buffer menjadi Readable Stream/berkas utuh
+      },
       auth: "skripsi_jwt",
     },
   },
@@ -44,6 +49,12 @@ const routes = (handler) => [
     path: "/myproducts/{id}",
     handler: handler.putMyProductByIdHandler,
     options: {
+      // Untuk menangani permintaan multipart/form-data,Seperti gambar,audio,berkas dll.
+      payload: {
+        allow: "multipart/form-data",
+        multipart: true,
+        output: "stream", // Untuk mengubah output payload yg berupa Buffer menjadi Readable Stream/berkas utuh
+      },
       auth: "skripsi_jwt",
     },
   },

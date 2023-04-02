@@ -2,8 +2,9 @@
 require("dotenv").config();
 
 const Hapi = require("@hapi/hapi");
-
 const Jwt = require("@hapi/jwt");
+const path = require("path");
+const Inert = require("@hapi/inert");
 
 // users
 const users = require("./api/users");
@@ -26,12 +27,20 @@ const products = require("./api/products");
 const ProductsService = require("./services/postgres/ProductsService");
 const ProductsValidator = require("./validator/products");
 
+// Uploads
+const uploads = require("./api/uploads");
+const StorageService = require("./services/storage/StorageService");
+const UploadsValidator = require("./validator/uploads");
+
 const init = async () => {
   //Membuat Instance Service
   const usersService = new UsersService();
   const gamesService = new GamesService();
   const productsService = new ProductsService();
   const authenticationsService = new AuthenticationsService();
+  const uploadsService = new StorageService(
+    path.resolve(__dirname, "api/uploads/file/images")
+  );
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -47,6 +56,9 @@ const init = async () => {
   await server.register([
     {
       plugin: Jwt,
+    },
+    {
+      plugin: Inert, // Inert: Plugin pihak ketiga yang dapat memudahkan kita dalam melayani permintaan menggunakan berkas
     },
   ]);
 
@@ -96,6 +108,17 @@ const init = async () => {
       options: {
         service: productsService,
         validator: ProductsValidator,
+        uploadService: uploadsService,
+        uploadValidator: UploadsValidator,
+      },
+    },
+    {
+      plugin: uploads,
+      options: {
+        service: uploadsService,
+        validator: UploadsValidator,
+        productsService: productsService,
+        productsValidator: ProductsValidator,
       },
     },
   ]);

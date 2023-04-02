@@ -4,9 +4,11 @@ kemudian memberikan respons dan sebaiknya memang hanya sebatas itu.*/
 const ClientError = require("../../exceptions/ClientError");
 
 class ProductsHandler {
-  constructor(service, validator) {
+  constructor(service, validator, uploadService, uploadValidator) {
     this._service = service;
     this._validator = validator;
+    this._uploadService = uploadService;
+    this._uploadValidator = uploadValidator;
 
     //Bind agar nilai this tidak berubah dari instance ProductsHandler, menjadi objek route yang memanggilnya karena sifat this pada javascript this akan berubah menjadi instance yang memanggilnya.
     this.postProductHandler = this.postProductHandler.bind(this);
@@ -21,33 +23,39 @@ class ProductsHandler {
 
   async postProductHandler(request, h) {
     try {
-      this._validator.validateProductPayload(request.payload);
-      const { title, description, price, images, type, game } = request.payload; // Untuk Mendapatkan Nilai Dari Request Yang Dikirim Dari Client
-
-      //Destructing Object : dalam JavaScript merupakan sintaksis yang dapat mengeluarkan nilai dari array atau properties dari sebuah object ke dalam satuan yang lebih kecil.
+      const { data, productData } = request.payload;
       const { id: credentialId } = request.auth.credentials;
-      const productId = await this._service.addProduct({
+
+      const newData = JSON.parse(productData);
+      const { title, description, price, type, game } = newData;
+
+      this._validator.validateProductPayload(newData);
+      this._uploadValidator.validateImageHeader(data.hapi.headers);
+
+      const filename = await this._uploadService.writeFile(data, data.hapi);
+      const fileLocation = `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`;
+
+      const product = await this._service.addProduct(
         title,
         description,
         price,
-        images,
         type,
         game,
-        owner: credentialId,
-      }); // Untuk proses memasukan catatan baru,Karena fungsi this._service.addProducts akan mengembalikan id catatan yang disimpan, maka buatlah variabel productId untuk menampung nilainya
-
+        credentialId,
+        fileLocation
+      );
       const response = h.response({
         status: "success",
-        message: "Product berhasil ditambahkan",
+        messsage: "",
         data: {
-          productId,
+          fileLocation: `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`,
+          product, // Fungsi writeFile mengembalikan nama berkas (filename). Kita bisa memanfaatkan nama berkas ini dalam membuat nilai fileLocation dan mengembalikannya sebagai response.
         },
       });
       response.code(201);
       return response;
     } catch (error) {
       if (error instanceof ClientError) {
-        // Mengevaluasi Bila error merupakan turunan dari ClientError, maka kita bisa memberikan detail informasi terkait error apa yang terjadi kepada client melalui properti error.message dan error.statusCode.
         const response = h.response({
           status: "fail",
           message: error.message,
@@ -56,7 +64,7 @@ class ProductsHandler {
         return response;
       }
 
-      // SERVER ERROR
+      // Server ERROR!
       const response = h.response({
         status: "fail",
         message: "Maaf, terjadi kegagalan pada server kami",
@@ -91,9 +99,7 @@ class ProductsHandler {
   async getProductByIdHandler(request, h) {
     try {
       const { id } = request.params;
-
       const product = await this._service.getProductById(id);
-
       return {
         status: "success",
         data: {
@@ -158,18 +164,39 @@ class ProductsHandler {
 
   async putMyProductByIdHandler(request, h) {
     try {
-      this._validator.validateProductPayload(request.payload);
-
-      const { id } = request.params; //id products
+      const { id } = request.params;
+      const { data, productData } = request.payload;
       const { id: credentialId } = request.auth.credentials;
 
-      await this._service.verifyProductOwner(id, credentialId);
-      await this._service.editMyProductById(id, request.payload);
+      await this._service.verifyProductAccess(id, credentialId);
 
-      return {
+      const newData = JSON.parse(productData);
+      const { title, description, price, type, game } = newData;
+
+      this._validator.validateProductPayload(newData);
+      this._uploadValidator.validateImageHeader(data.hapi.headers);
+
+      const filename = await this._uploadService.writeFile(data, data.hapi);
+      const fileLocation = `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`;
+      const product = await this._service.editMyProductById(
+        id,
+        title,
+        description,
+        price,
+        type,
+        game,
+        fileLocation
+      );
+      const response = h.response({
         status: "success",
-        message: "Product berhasil diperbarui",
-      };
+        messsage: "",
+        data: {
+          fileLocation: `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`,
+          product, // Fungsi writeFile mengembalikan nama berkas (filename). Kita bisa memanfaatkan nama berkas ini dalam membuat nilai fileLocation dan mengembalikannya sebagai response.
+        },
+      });
+      response.code(201);
+      return response;
     } catch (error) {
       if (error instanceof ClientError) {
         const response = h.response({
@@ -180,6 +207,7 @@ class ProductsHandler {
         return response;
       }
 
+      // Server ERROR!
       const response = h.response({
         status: "fail",
         message: "Maaf, terjadi kegagalan pada server kami",
