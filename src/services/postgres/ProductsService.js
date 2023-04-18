@@ -35,7 +35,7 @@ class ProductsService {
     if (!result.rows[0].id_product) {
       throw new InvariantError("Produk gagal ditambahkan");
     }
-
+    console.log(result.rows[0].id_product);
     return result.rows[0].id_product; //Untuk Mengembalikan Id
   }
 
@@ -49,6 +49,41 @@ class ProductsService {
     };
 
     const result = await this._pool.query(query); //Melakukan Query Lalu Hasilnya Di Masukkan Ke Dalam Variabel Result
+    // console.log(result.rows.map(mapDBToModel));
+    return result.rows.map(mapDBToModel); //Mengmebalikan Hasil Data Yang Di Dapat Lalu Di mapping,Dengan menggunakan berkas indek yang sudah kita buat di folder utils
+  }
+
+  async getProductsByGame(gameId) {
+    //Kueri ini akan mengembalikan seluruh nilai products yang dimiliki oleh dan dikolaborasikan dengan owner
+    //Data products yang dihasilkan berpotensi duplikasi, sehingga di akhir kueri, kita GROUP nilainya agar menghilangkan duplikasi yang dilihat berdasarkan products.id.
+    const query = {
+      text: `SELECT products.*, games.title_game
+            FROM products
+            LEFT JOIN games ON products.game = games.id_game
+            WHERE game = $1`,
+      values: [gameId],
+    };
+
+    const result = await this._pool.query(query); //Melakukan Query Lalu Hasilnya Di Masukkan Ke Dalam Variabel Result
+    console.log(result.rows.map(mapDBToModel));
+    return result.rows.map(mapDBToModel); //Mengmebalikan Hasil Data Yang Di Dapat Lalu Di mapping,Dengan menggunakan berkas indek yang sudah kita buat di folder utils
+  }
+
+  async getProductsByGameAndPrice(gameId, rangeFrom, rangeTo) {
+    const rangeFromNumber = Number(rangeFrom);
+    const rangeToNumber = Number(rangeTo);
+    //Kueri ini akan mengembalikan seluruh nilai products yang dimiliki oleh dan dikolaborasikan dengan owner
+    //Data products yang dihasilkan berpotensi duplikasi, sehingga di akhir kueri, kita GROUP nilainya agar menghilangkan duplikasi yang dilihat berdasarkan products.id.
+    const query = {
+      text: `SELECT products.*, games.title_game
+            FROM products
+            LEFT JOIN games ON products.game = games.id_game
+            WHERE game = $1 AND price BETWEEN $2 AND $3`,
+      values: [gameId, rangeFromNumber, rangeToNumber],
+    };
+
+    const result = await this._pool.query(query); //Melakukan Query Lalu Hasilnya Di Masukkan Ke Dalam Variabel Result
+    console.log(result.rows.map(mapDBToModel));
     return result.rows.map(mapDBToModel); //Mengmebalikan Hasil Data Yang Di Dapat Lalu Di mapping,Dengan menggunakan berkas indek yang sudah kita buat di folder utils
   }
 
@@ -67,6 +102,7 @@ class ProductsService {
     };
 
     const result = await this._pool.query(query); //Melakukan Query Lalu Hasilnya Di Masukkan Ke Dalam Variabel Result
+    //console.log(result.rows.map(mapDBToModel));
     return result.rows.map(mapDBToModel); //Mengmebalikan Hasil Data Yang Di Dapat Lalu Di mapping,Dengan menggunakan berkas indek yang sudah kita buat di folder utils
   }
 
@@ -93,7 +129,7 @@ class ProductsService {
   async getMyProductById(id) {
     const query = {
       //Kata FROM = Tabel Sebelah Kiri, Kata JOIN = Tabel Sebelah Kanan
-      text: `SELECT products.*, users.username, games.title_game
+      text: `SELECT products.*, users.username, users.contact, games.title_game
             FROM products
             LEFT JOIN users ON products.owner = users.id
             LEFT JOIN games ON products.game = games.id_game
@@ -112,9 +148,6 @@ class ProductsService {
   async editMyProductById(id, title, description, price, type, game, imageUrl) {
     const updateAt = new Date().toISOString();
 
-    console.log(id);
-    console.log(imageUrl);
-    console.log(game);
     const query = {
       text: "UPDATE products SET title_product = $1,description = $2,price = $3, images = $4, type_ads = $5, game = $6 WHERE id_product = $7 RETURNING id_product",
       values: [title, description, price, imageUrl, type, game, id],
@@ -125,6 +158,8 @@ class ProductsService {
     if (!result.rows.length) {
       throw new NotFoundError("Gagal memperbarui produk. Id tidak ditemukan");
     }
+
+    return result.rows[0].id_product;
   }
 
   async deleteMyProductById(id) {

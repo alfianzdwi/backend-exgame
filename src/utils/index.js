@@ -28,10 +28,11 @@ const mapGameDBToModel = ({ id_game, title_game }) => ({
   title: title_game,
 });
 
-const mapUserDBToModel = ({ id, username, contact }) => ({
+const mapUserDBToModel = ({ id, username, contact, email }) => ({
   id,
   username,
   contact,
+  email,
 });
 
 module.exports = { mapDBToModel, mapUserDBToModel, mapGameDBToModel };

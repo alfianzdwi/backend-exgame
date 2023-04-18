@@ -5,9 +5,17 @@ const routes = (handler) => [
     handler: handler.postUserHandler,
   },
   {
+    method: "PUT",
+    path: "/users/{id}",
+    handler: handler.putUserByIdHandler,
+  },
+  {
     method: "GET",
     path: "/users/{id}",
     handler: handler.getUserByIdHandler,
+    options: {
+      auth: "skripsi_jwt",
+    },
   },
   {
     method: "GET",

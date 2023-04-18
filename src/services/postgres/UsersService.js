@@ -12,7 +12,7 @@ class UsersService {
   }
 
   //Function Menambahkan User
-  async addUser({ username, password, contact }) {
+  async addUser({ username, password, contact, email }) {
     // Untuk Verifikasi username, pastikan belum terdaftar.
     await this.verifyNewUsername(username);
 
@@ -21,8 +21,8 @@ class UsersService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const query = {
-      text: "INSERT INTO users VALUES($1, $2, $3, $4) RETURNING id",
-      values: [id, username, hashedPassword, contact],
+      text: "INSERT INTO users VALUES($1, $2, $3, $4, $5) RETURNING id",
+      values: [id, username, hashedPassword, contact, email],
     };
 
     const result = await this._pool.query(query);
@@ -54,7 +54,7 @@ class UsersService {
   //Funtion Untuk Mendapatkan User Berdasarkan id
   async getUserById(userId) {
     const query = {
-      text: "SELECT id, username, contact FROM users WHERE id = $1",
+      text: "SELECT * FROM users WHERE id = $1",
       values: [userId],
     };
 
@@ -64,6 +64,23 @@ class UsersService {
       throw new NotFoundError("User tidak ditemukan");
     }
     return result.rows.map(mapUserDBToModel)[0];
+  }
+
+  async editUserById(id, password, contact, email) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const query = {
+      text: "UPDATE users SET password = $1,contact = $2,email = $3 WHERE id = $4 RETURNING id",
+      values: [hashedPassword, contact, email, id],
+    };
+
+    const result = await this._pool.query(query);
+
+    if (!result.rows.length) {
+      throw new NotFoundError("Gagal memperbarui user. Id tidak ditemukan");
+    }
+
+    return result.rows[0].id;
   }
 
   //Function Verifikasi Username Dan Password Untuk Nanti Mendapatkan Token

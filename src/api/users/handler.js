@@ -7,6 +7,7 @@ class UsersHandler {
 
     //Binding agar nilainya tetap instance dari UsersHandler dan nilai/konteks this tidak berubah
     this.postUserHandler = this.postUserHandler.bind(this);
+    this.putUserByIdHandler = this.putUserByIdHandler.bind(this);
     this.getUserByIdHandler = this.getUserByIdHandler.bind(this);
     this.getUsersByUsernameHandler = this.getUsersByUsernameHandler.bind(this);
   }
@@ -14,12 +15,13 @@ class UsersHandler {
   async postUserHandler(request, h) {
     try {
       this._validator.validateUserPayload(request.payload);
-      const { username, password, contact } = request.payload; //Mengambil Body Request Dari Client
+      const { username, password, contact, email } = request.payload; //Mengambil Body Request Dari Client
 
       const userId = await this._service.addUser({
         username,
         password,
         contact,
+        email,
       }); //Memanggil fungsi addUser dari this._service untuk memasukkan user baru dan mengembalikan id
 
       const response = h.response({
@@ -51,11 +53,52 @@ class UsersHandler {
     }
   }
 
+  async putUserByIdHandler(request, h) {
+    try {
+      const { id } = request.params;
+      const { password, contact, email } = request.payload;
+
+      const userId = await this._service.editUserById(
+        id,
+        password,
+        contact,
+        email
+      );
+      const response = h.response({
+        status: "success",
+        messsage: "Berhasil Mengubah User",
+        data: {
+          userId,
+        },
+      });
+      response.code(201);
+      return response;
+    } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: "fail",
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
+
+      // Server ERROR!
+      const response = h.response({
+        status: "fail",
+        message: "Maaf, terjadi kegagalan pada server kami",
+      });
+      response.code(500);
+      console.error(error);
+      return response;
+    }
+  }
+
   async getUserByIdHandler(request, h) {
     try {
       const { id } = request.params;
       const user = await this._service.getUserById(id);
-
+      console.log(user);
       return {
         status: "success",
         data: {

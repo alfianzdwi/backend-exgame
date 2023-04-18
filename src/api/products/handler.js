@@ -13,6 +13,9 @@ class ProductsHandler {
     //Bind agar nilai this tidak berubah dari instance ProductsHandler, menjadi objek route yang memanggilnya karena sifat this pada javascript this akan berubah menjadi instance yang memanggilnya.
     this.postProductHandler = this.postProductHandler.bind(this);
     this.getProductsHandler = this.getProductsHandler.bind(this);
+    this.getProductsByGameHandler = this.getProductsByGameHandler.bind(this);
+    this.getProductsByGameAndPriceHandler =
+      this.getProductsByGameAndPriceHandler.bind(this);
     this.getMyProductsHandler = this.getMyProductsHandler.bind(this);
     this.getProductByIdHandler = this.getProductByIdHandler.bind(this);
     this.getMyProductByIdHandler = this.getMyProductByIdHandler.bind(this);
@@ -30,7 +33,7 @@ class ProductsHandler {
       const { title, description, price, type, game } = newData;
 
       this._validator.validateProductPayload(newData);
-      this._uploadValidator.validateImageHeader(data.hapi.headers);
+      //this._uploadValidator.validateImageHeader(data.hapi.headers);
 
       const filename = await this._uploadService.writeFile(data, data.hapi);
       const fileLocation = `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`;
@@ -46,9 +49,8 @@ class ProductsHandler {
       );
       const response = h.response({
         status: "success",
-        messsage: "",
+        messsage: "Berhasil Mnambahkan Product",
         data: {
-          fileLocation: `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`,
           product, // Fungsi writeFile mengembalikan nama berkas (filename). Kita bisa memanfaatkan nama berkas ini dalam membuat nilai fileLocation dan mengembalikannya sebagai response.
         },
       });
@@ -83,6 +85,73 @@ class ProductsHandler {
         products,
       },
     };
+  }
+
+  async getProductsByGameHandler(request, h) {
+    const { game } = request.params;
+    try {
+      const products = await this._service.getProductsByGame(game);
+      return {
+        status: "success",
+        data: {
+          products,
+        },
+      };
+    } catch (error) {
+      if (error instanceof ClientError) {
+        //Mengevaluasi Agar pesan error lebih spesifik dengan menggunakan jenis error yang sudah kita buat di folder exceptions
+        const response = h.response({
+          status: "fail",
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
+
+      const response = h.response({
+        status: "fail",
+        message: "Maaf, terjadi kegagalan pada server kami",
+      });
+      response.code(500);
+      console.error(error);
+      return response;
+    }
+  }
+
+  async getProductsByGameAndPriceHandler(request, h) {
+    const { game } = request.params;
+    const { rangeFrom, rangeTo } = request.query;
+    try {
+      const products = await this._service.getProductsByGameAndPrice(
+        game,
+        rangeFrom,
+        rangeTo
+      );
+      return {
+        status: "success",
+        data: {
+          products,
+        },
+      };
+    } catch (error) {
+      if (error instanceof ClientError) {
+        //Mengevaluasi Agar pesan error lebih spesifik dengan menggunakan jenis error yang sudah kita buat di folder exceptions
+        const response = h.response({
+          status: "fail",
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
+
+      const response = h.response({
+        status: "fail",
+        message: "Maaf, terjadi kegagalan pada server kami",
+      });
+      response.code(500);
+      console.error(error);
+      return response;
+    }
   }
 
   async getMyProductsHandler(request) {
@@ -174,7 +243,6 @@ class ProductsHandler {
       const { title, description, price, type, game } = newData;
 
       this._validator.validateProductPayload(newData);
-      this._uploadValidator.validateImageHeader(data.hapi.headers);
 
       const filename = await this._uploadService.writeFile(data, data.hapi);
       const fileLocation = `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`;
@@ -189,9 +257,8 @@ class ProductsHandler {
       );
       const response = h.response({
         status: "success",
-        messsage: "",
+        messsage: "Berhasil Mengubah Product",
         data: {
-          fileLocation: `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`,
           product, // Fungsi writeFile mengembalikan nama berkas (filename). Kita bisa memanfaatkan nama berkas ini dalam membuat nilai fileLocation dan mengembalikannya sebagai response.
         },
       });
