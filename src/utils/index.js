@@ -35,4 +35,15 @@ const mapUserDBToModel = ({ id, username, contact, email }) => ({
   email,
 });
 
-module.exports = { mapDBToModel, mapUserDBToModel, mapGameDBToModel };
+const mapTransactionDBToModel = ({ id_transaction, price, title }) => ({
+  id: id_transaction,
+  price,
+  title,
+});
+
+module.exports = {
+  mapDBToModel,
+  mapUserDBToModel,
+  mapGameDBToModel,
+  mapTransactionDBToModel,
+};

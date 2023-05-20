@@ -49,7 +49,7 @@ class ProductsHandler {
       );
       const response = h.response({
         status: "success",
-        messsage: "Berhasil Mnambahkan Product",
+        messsage: "Berhasil Menambahkan Product",
         data: {
           product, // Fungsi writeFile mengembalikan nama berkas (filename). Kita bisa memanfaatkan nama berkas ini dalam membuat nilai fileLocation dan mengembalikannya sebagai response.
         },

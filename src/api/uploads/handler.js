@@ -130,7 +130,7 @@ class UploadsHandler {
     try {
       const { data } = request.payload;
       const { id } = request.params;
-      console.log(id);
+
       this._validator.validateImageHeader(data.hapi.headers);
       const filename = await this._service.writeFile(data, data.hapi);
       const fileLocation = `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`;

@@ -31,13 +31,17 @@ const ProductsValidator = require("./validator/products");
 const uploads = require("./api/uploads");
 const StorageService = require("./services/storage/StorageService");
 const UploadsValidator = require("./validator/uploads");
-const midtransPlugin = require("./api/payment/midtransPlugin");
+
+// transactions
+const transactions = require("./api/payment");
+const TransactionsService = require("./services/postgres/TransactionsService");
 
 const init = async () => {
   //Membuat Instance Service
   const usersService = new UsersService();
   const gamesService = new GamesService();
   const productsService = new ProductsService();
+  const transactionsService = new TransactionsService();
   const authenticationsService = new AuthenticationsService();
   const uploadsService = new StorageService(
     path.resolve(__dirname, "api/uploads/file/images")
@@ -123,7 +127,10 @@ const init = async () => {
       },
     },
     {
-      plugin: midtransPlugin,
+      plugin: transactions,
+      options: {
+        service: transactionsService,
+      },
     },
   ]);
 

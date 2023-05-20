@@ -113,7 +113,7 @@ class AuthenticationsHandler {
 
       return {
         status: "success",
-        message: "Refresh token berhasil dihapus",
+        message: "Berhasil Logout",
       };
     } catch (error) {
       if (error instanceof ClientError) {

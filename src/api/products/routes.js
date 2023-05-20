@@ -8,6 +8,7 @@ const routes = (handler) => [
         allow: "multipart/form-data",
         multipart: true,
         output: "stream", // Untuk mengubah output payload yg berupa Buffer menjadi Readable Stream/berkas utuh
+        maxBytes: 1000 * 1024 * 3, //Maksilmal Gambar 3MB
       },
       auth: "skripsi_jwt",
     },
@@ -70,6 +71,7 @@ const routes = (handler) => [
         allow: "multipart/form-data",
         multipart: true,
         output: "stream", // Untuk mengubah output payload yg berupa Buffer menjadi Readable Stream/berkas utuh
+        maxBytes: 1000 * 1024 * 3, //Maksilmal Gambar 3MB
       },
       auth: "skripsi_jwt",
     },

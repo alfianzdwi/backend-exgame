@@ -13,7 +13,7 @@ class ProductsService {
   async addProduct(title, description, price, type, game, owner, imageUrl) {
     const createdAt = new Date().toISOString().substring(0, 10);
     const id = `pdc-${nanoid(16)}`;
-    console.log(createdAt);
+
     const query = {
       text: "INSERT INTO products VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id_product",
       values: [
@@ -35,7 +35,7 @@ class ProductsService {
     if (!result.rows[0].id_product) {
       throw new InvariantError("Produk gagal ditambahkan");
     }
-    console.log(result.rows[0].id_product);
+
     return result.rows[0].id_product; //Untuk Mengembalikan Id
   }
 
@@ -45,11 +45,12 @@ class ProductsService {
     const query = {
       text: `SELECT products.*, games.title_game
             FROM products
-            LEFT JOIN games ON products.game = games.id_game`,
+            LEFT JOIN games ON products.game = games.id_game WHERE products.type_ads = $1`,
+      values: ["Premium"],
     };
 
     const result = await this._pool.query(query); //Melakukan Query Lalu Hasilnya Di Masukkan Ke Dalam Variabel Result
-    // console.log(result.rows.map(mapDBToModel));
+
     return result.rows.map(mapDBToModel); //Mengmebalikan Hasil Data Yang Di Dapat Lalu Di mapping,Dengan menggunakan berkas indek yang sudah kita buat di folder utils
   }
 
@@ -65,7 +66,7 @@ class ProductsService {
     };
 
     const result = await this._pool.query(query); //Melakukan Query Lalu Hasilnya Di Masukkan Ke Dalam Variabel Result
-    console.log(result.rows.map(mapDBToModel));
+
     return result.rows.map(mapDBToModel); //Mengmebalikan Hasil Data Yang Di Dapat Lalu Di mapping,Dengan menggunakan berkas indek yang sudah kita buat di folder utils
   }
 
@@ -83,16 +84,12 @@ class ProductsService {
     };
 
     const result = await this._pool.query(query); //Melakukan Query Lalu Hasilnya Di Masukkan Ke Dalam Variabel Result
-    console.log(result.rows.map(mapDBToModel));
+
     return result.rows.map(mapDBToModel); //Mengmebalikan Hasil Data Yang Di Dapat Lalu Di mapping,Dengan menggunakan berkas indek yang sudah kita buat di folder utils
   }
 
   async getMyProducts(owner) {
     const query = {
-      /*text: `SELECT products.*, games.title_game
-            FROM products
-            LEFT JOIN games ON products.game = games.id_game
-            WHERE products.owner = $1` GROUP BY products.id_product,*/ //GROUP BY agar tidak ada duplikat
       text: `SELECT products.*, games.title_game
             FROM products
             LEFT JOIN games ON products.game = games.id_game
@@ -102,7 +99,7 @@ class ProductsService {
     };
 
     const result = await this._pool.query(query); //Melakukan Query Lalu Hasilnya Di Masukkan Ke Dalam Variabel Result
-    //console.log(result.rows.map(mapDBToModel));
+
     return result.rows.map(mapDBToModel); //Mengmebalikan Hasil Data Yang Di Dapat Lalu Di mapping,Dengan menggunakan berkas indek yang sudah kita buat di folder utils
   }
 
@@ -117,7 +114,6 @@ class ProductsService {
     };
 
     const result = await this._pool.query(query);
-    console.log(result);
     if (!result.rows.length) {
       throw new NotFoundError("Produk tidak ditemukan");
     }

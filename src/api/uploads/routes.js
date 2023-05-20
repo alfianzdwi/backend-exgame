@@ -35,7 +35,6 @@ const routes = (handler) => [
         allow: "multipart/form-data",
         multipart: true,
         output: "stream",
-        //maxBytes: 1000 * 500, // 500kb
       },
       auth: "skripsi_jwt",
     },
