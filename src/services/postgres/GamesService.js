@@ -1,7 +1,7 @@
 const { nanoid } = require("nanoid");
 const { Pool } = require("pg");
 const AuthorizationError = require("../../exceptions/AuthorizationError.js");
-const InvariantError = require("../../exceptions/InVariantError");
+const InvariantError = require("../../exceptions/InvariantError");
 const NotFoundError = require("../../exceptions/NotFoundError");
 const { mapGameDBToModel } = require("../../utils");
 

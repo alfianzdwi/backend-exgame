@@ -1,4 +1,4 @@
-const InvariantError = require("../../exceptions/InVariantError");
+const InvariantError = require("../../exceptions/InvariantError");
 const { ProductPayloadSchema } = require("./schema");
 
 //Melakukan Validasi nya
