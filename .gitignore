@@ -1,2 +1,3 @@
 node_modules
-test-api-webserver.pem 
+test-api-webserver.pem
+.env

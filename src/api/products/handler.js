@@ -36,7 +36,7 @@ class ProductsHandler {
       //this._uploadValidator.validateImageHeader(data.hapi.headers);
 
       const filename = await this._uploadService.writeFile(data, data.hapi);
-      const fileLocation = `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`;
+      //const fileLocation = `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`;
 
       const product = await this._service.addProduct(
         title,
@@ -45,7 +45,7 @@ class ProductsHandler {
         type,
         game,
         credentialId,
-        fileLocation
+        filename
       );
       const response = h.response({
         status: "success",
@@ -245,7 +245,7 @@ class ProductsHandler {
       this._validator.validateProductPayload(newData);
 
       const filename = await this._uploadService.writeFile(data, data.hapi);
-      const fileLocation = `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`;
+      //const fileLocation = `http://${process.env.HOST}:${process.env.PORT}/upload/images/${filename}`;
       const product = await this._service.editMyProductById(
         id,
         title,
@@ -253,7 +253,7 @@ class ProductsHandler {
         price,
         type,
         game,
-        fileLocation
+        filename
       );
       const response = h.response({
         status: "success",
