@@ -16,6 +16,8 @@ class ProductsHandler {
     this.getProductsByGameHandler = this.getProductsByGameHandler.bind(this);
     this.getProductsByGameAndPriceHandler =
       this.getProductsByGameAndPriceHandler.bind(this);
+    this.searchProductsByTitleHandler =
+      this.searchProductsByTitleHandler.bind(this);
     this.getMyProductsHandler = this.getMyProductsHandler.bind(this);
     this.getProductByIdHandler = this.getProductByIdHandler.bind(this);
     this.getMyProductByIdHandler = this.getMyProductByIdHandler.bind(this);
@@ -91,6 +93,39 @@ class ProductsHandler {
     const { game } = request.params;
     try {
       const products = await this._service.getProductsByGame(game);
+      return {
+        status: "success",
+        data: {
+          products,
+        },
+      };
+    } catch (error) {
+      if (error instanceof ClientError) {
+        //Mengevaluasi Agar pesan error lebih spesifik dengan menggunakan jenis error yang sudah kita buat di folder exceptions
+        const response = h.response({
+          status: "fail",
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
+
+      const response = h.response({
+        status: "fail",
+        message: "Maaf, terjadi kegagalan pada server kami",
+      });
+      response.code(500);
+      console.error(error);
+      return response;
+    }
+  }
+
+  async searchProductsByTitleHandler(request, h) {
+    const { game } = request.params;
+    const { title } = request.query;
+    try {
+      const products = await this._service.searchProductsByTitle(game, title);
+      console.log(products);
       return {
         status: "success",
         data: {

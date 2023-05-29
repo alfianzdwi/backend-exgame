@@ -29,13 +29,16 @@ const ProductsValidator = require("./validator/products");
 
 // Uploads
 const uploads = require("./api/uploads");
-//const StorageService = require("./services/storage/StorageService");
-const StorageService = require("./services/S3/StorageService");
+const StorageService = require("./services/storage/StorageService");
+//const StorageService = require("./services/S3/StorageService");
 const UploadsValidator = require("./validator/uploads");
 
 // transactions
 const transactions = require("./api/payment");
 const TransactionsService = require("./services/postgres/TransactionsService");
+
+//Cronjob
+const cronJob = require("./utils/cronjob");
 
 const init = async () => {
   //Membuat Instance Service
@@ -44,7 +47,9 @@ const init = async () => {
   const productsService = new ProductsService();
   const transactionsService = new TransactionsService();
   const authenticationsService = new AuthenticationsService();
-  const uploadsService = new StorageService(); //new StorageService(path.resolve(__dirname, "api/uploads/file/images"));
+  const uploadsService = new StorageService(
+    path.resolve(__dirname, "api/uploads/file/images")
+  ); //new StorageService(path.resolve(__dirname, "api/uploads/file/images")); //new StorageService();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -134,6 +139,7 @@ const init = async () => {
   ]);
 
   await server.start();
+  cronJob();
   console.log(`Server berjalan pada ${server.info.uri}`);
 };
 

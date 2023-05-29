@@ -10,6 +10,7 @@ class UsersHandler {
     this.putUserByIdHandler = this.putUserByIdHandler.bind(this);
     this.getUserByIdHandler = this.getUserByIdHandler.bind(this);
     this.getUsersByUsernameHandler = this.getUsersByUsernameHandler.bind(this);
+    this.verifyUserAccount = this.verifyUserAccount.bind(this);
   }
 
   async postUserHandler(request, h) {
@@ -46,6 +47,41 @@ class UsersHandler {
       const response = h.response({
         status: "fail",
         message: "Maaf, terjadi kegagalan pada server kami.",
+      });
+      response.code(500);
+      console.error(error);
+      return response;
+    }
+  }
+
+  async verifyUserAccount(request, h) {
+    try {
+      const { token } = request.query;
+
+      const userId = await this._service.verifyUserAccount(token);
+      const response = h.response({
+        status: "success",
+        messsage: "Berhasil Melakukan Verifikasi",
+        data: {
+          userId,
+        },
+      });
+      response.code(201);
+      return response;
+    } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: "fail",
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
+
+      // Server ERROR!
+      const response = h.response({
+        status: "fail",
+        message: "Maaf, terjadi kegagalan pada server kami",
       });
       response.code(500);
       console.error(error);

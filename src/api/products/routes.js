@@ -31,6 +31,14 @@ const routes = (handler) => [
   },
   {
     method: "GET",
+    path: "/productsss/{game}",
+    handler: handler.searchProductsByTitleHandler,
+    options: {
+      auth: "skripsi_jwt",
+    },
+  },
+  {
+    method: "GET",
     path: "/productss/{game}",
     handler: handler.getProductsByGameAndPriceHandler,
     options: {

@@ -70,6 +70,18 @@ class ProductsService {
     return result.rows.map(mapDBToModel); //Mengmebalikan Hasil Data Yang Di Dapat Lalu Di mapping,Dengan menggunakan berkas indek yang sudah kita buat di folder utils
   }
 
+  async searchProductsByTitle(gameId, title) {
+    console.log(gameId);
+    console.log(title);
+    const query = {
+      text: `SELECT * FROM products WHERE title_product ILIKE $1 AND game = $2`,
+      values: [`%${title}%`, gameId],
+    };
+
+    const result = await this._pool.query(query);
+    return result.rows.map(mapDBToModel);
+  }
+
   async getProductsByGameAndPrice(gameId, rangeFrom, rangeTo) {
     const rangeFromNumber = Number(rangeFrom);
     const rangeToNumber = Number(rangeTo);
@@ -86,6 +98,23 @@ class ProductsService {
     const result = await this._pool.query(query); //Melakukan Query Lalu Hasilnya Di Masukkan Ke Dalam Variabel Result
 
     return result.rows.map(mapDBToModel); //Mengmebalikan Hasil Data Yang Di Dapat Lalu Di mapping,Dengan menggunakan berkas indek yang sudah kita buat di folder utils
+  }
+
+  async deleteOldProducts() {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const query = {
+      text: `DELETE FROM products
+      WHERE (created_at < $1 AND type_ads = 'Free')
+      OR (created_at < $2 AND type_ads = 'Premium')`,
+      values: [sevenDaysAgo, thirtyDaysAgo],
+    };
+
+    const result = await this._pool.query(query);
+    console.log(result);
   }
 
   async getMyProducts(owner) {
