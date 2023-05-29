@@ -27,7 +27,7 @@ class UsersService {
       from: "exgame2023@gmail.com",
       to: email,
       subject: "Verifikasi Akun",
-      text: `Klik link berikut untuk verifikasi akun Anda: http://localhost:5000/verify?token=${verificationToken}`,
+      text: `Klik link berikut untuk verifikasi akun Anda: http://13.229.130.75:5000/verify?token=${verificationToken}`,
     };
     console.log("Terkirim", email);
     console.log(new Date());
